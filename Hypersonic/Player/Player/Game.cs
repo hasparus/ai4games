@@ -50,6 +50,8 @@ struct Point
 
     public static bool operator !=(Point a, Point b) => !(a == b);
 
+    public static Point operator +(Point a, Point b) => Point.New(a.x + b.x, a.y + b.y);
+
     static float Square(float x) => x * x;
 
     public float DistanceTo(Point other)
@@ -155,6 +157,22 @@ struct Play
     public static Play New(Type t, Point p)
         => new Play(t, p);
 
+    public IEnumerable<Play> NextPlays()
+    {
+        var ths = this;
+        var neighbors = new[] {Point.New(1, 0), Point.New(-1, 0), Point.New(0, -1), Point.New(0, 1)};
+        return neighbors.Select(
+            x => new[] {new Play(Type.Move, x + ths.pos), new Play(Type.Bomb, x + ths.pos)})
+            .SelectMany(x => x);
+    }
+
+    public IEnumerable<Play> NextLegalPlays(State s)
+    {
+        var forbiddenPoints = s.boxes.Concat(s.bombs.Select(x => x.p));
+        return NextPlays().Where(k => !forbiddenPoints.Contains(k.pos));
+        // not optimal, should have modified NextPlays instead, but there's 8 possible moves so...
+    }
+
     public void Do(string msg = "") 
         => Console.WriteLine($"{type.ToString().ToUpper()} {pos} {msg}");
 }
@@ -171,18 +189,29 @@ static class Mcts
 
     public class Node
     {
+        public Node parent;
+        public byte index;
+
         public static double ExplorationParameter = Math.Sqrt(2);
 
         public int wins;
         public int plays;
         public State state;
 
+
+        public Play[] legalPlays;
+        public bool[] PlayExpanded;
+        public 
+
+
         double UCB()
             => wins / (float)plays * ExplorationParameter *
                Math.Sqrt(Math.Log(Info.PlaysTotal) / plays);
 
-        public Node(int w = 0, int p = 0, State s = new State())
+        public Node(Node parent, byte index, int w = 0, int p = 0, State s = new State())
         {
+            this.parent = parent;
+            this.index = index;
             wins = w;
             plays = p;
             state = s;
@@ -191,10 +220,13 @@ static class Mcts
 
     public static Play Search(Timer timer)
     {
-        var root = new Node();
+        var root = new Node(null, 0);
 
+
+        // main loop
         while (!timer.OutOfTime())
         {
+
         }
 
 
