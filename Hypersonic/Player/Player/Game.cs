@@ -201,7 +201,7 @@ static class Mcts
 
         public Play[] legalPlays;
         public bool[] PlayExpanded;
-        public 
+        public Node kids;
 
 
         double UCB()
@@ -226,7 +226,7 @@ static class Mcts
         // main loop
         while (!timer.OutOfTime())
         {
-
+            
         }
 
 
@@ -250,7 +250,11 @@ static class Mcts
 
     public static Node Expand(Node v)
     {
-        
+        var firstNotExpanded = v.PlayExpanded.TakeWhile(x => x == false).Count();
+        var action = v.legalPlays[firstNotExpanded];
+
+        //todo use action to generate new Node
+
     }
 }
 
